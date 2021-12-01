@@ -97,21 +97,22 @@ func help(rootUrl string)  map[string]DeadLink{
 	//matched, err := regexp.MatchString("(\\w+):\\/\\/([^/:]+)", rootUrl)
 	//matched, err := regexp.Compile("(\\w+):\\/\\/([^/:]+)", rootUrl)
 	//rootUrl.match()
+	// Regular expression 正则表达式
 	re := regexp.MustCompile("(\\w+):\\/\\/([^/:]+)")
 	fixedUrl := re.FindString(rootUrl)
 
 	DeadLinks := make(map[string]DeadLink)// map类型的DeadLinks无重复地储存所有DeadLink
-	tempLinks1 := make(map[string]interface{})// map类型的tempLinks1暂存html中的所有链接
-	doc := GetChildLink(fixedUrl)// 解析得到url网址的*html.Node
+	tempLinks1 := make(map[string]interface{})// map类型空的tempLinks1暂存html中的所有链接
+	doc := GetChildLink(rootUrl)// 解析得到url网址的*html.Node
 	linksLayer1 := visit(tempLinks1, doc, fixedUrl)// 得到第一层所有的链接列表，用map类型的linkLayer1储存
 	fmt.Printf("当前网页有%d个一级链接\r\n", len(linksLayer1))
 	// 用link取出第一层链接，挨个判断是否为死链
-	for link, _ := range linksLayer1 {
+	for link := range linksLayer1 {
 		go func() {
 			fmt.Printf("一级link： %s\r\n  ", link)
 			resCode := GetResCode(link)
 			fmt.Printf("%d\r\n", resCode)
-			if (resCode < 200 || resCode >= 300) { // 情况1：判断为死链
+			if resCode < 200 || resCode >= 300 { // 情况1：判断为死链
 				//fmt.Printf("%s ", link)
 				//fmt.Printf("%d\r\n", resCode)
 				// 借助temp，把死链加入DeadLinks
@@ -126,11 +127,11 @@ func help(rootUrl string)  map[string]DeadLink{
 				linksLayer2 := visit(tempLinks2, doc, fixedUrl) // 得到该link对应的第二层链接列表，用map类型的linkLayer2储存
 				fmt.Printf("当前网页有%d个二级链接\r\n", len(linksLayer2))
 				// 用link取出第二层链接，挨个判断是否为死链
-				for link, _ := range linksLayer2 {
+				for link := range linksLayer2 {
 					fmt.Printf("二级link： %s\r\n", link)
 					resCode := GetResCode(link)
 					fmt.Printf("%d\r\n", resCode)
-					if (resCode < 200 || resCode >= 300) {
+					if resCode < 200 || resCode >= 300 {
 						//fmt.Printf("%s ", link)
 						//fmt.Printf("%d\r\n", resCode)
 						// 借助temp，把死链加入DeadLinks
@@ -156,8 +157,8 @@ func main() {
 	//help("https://www.javaroad.cn/questions/327057")
 	//DeadLinkDetector("https://clslaid.icu")
 	//DeadLinkDetector("https://studygolang.com")
-	//DeadLinkDetector("https://www.javaroad.cn/questions/327057")
-	re := regexp.MustCompile("(\\w+):\\/\\/([^/:]+)")
-	fixedUrl := re.FindString("https://studygolang.com")
-	fmt.Printf("link： %s\r\n", fixedUrl)
+	DeadLinkDetector("https://www.javaroad.cn/questions/327057")
+	//re := regexp.MustCompile("(\\w+):\\/\\/([^/:]+)")
+	//fixedUrl := re.FindString("https://www.javaroad.cn/questions/327057")
+	//fmt.Printf("link： %s\r\n", fixedUrl)
 }
